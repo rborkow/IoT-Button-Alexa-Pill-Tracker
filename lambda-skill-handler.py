@@ -81,7 +81,7 @@ def handle_session_end_request():
 
 def check_last_pilltime(intent, session):
 
-    buttonSerialNumber = 'G030JF058236K6GF'
+    buttonSerialNumber = os.environ['SerialNumber']
 
     card_title = intent['name']
     session_attributes = {}
