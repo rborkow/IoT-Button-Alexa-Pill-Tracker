@@ -33,7 +33,10 @@ Quick app for using an AWS IoT button and Amazon Alexa to keep track of the last
 ### Alexa Skill Lambda Function Setup
 For a general overview of setting up a custom Alexa skill using AWS lambda, see the documentation [here](https://developer.amazon.com/public/solutions/alexa/alexa-skills-kit/docs/developing-an-alexa-skill-as-a-lambda-function).
 
-This guide will walk you through most of the steps necessary to get a Lambda function set up as a back-end to the Alexa Skill. Two additional steps will be needed to get the function running correctly:
+This guide will walk you through most of the steps necessary to get a Lambda function set up as a back-end to the Alexa Skill. Copy and paste the code in the "lambda-skills-handler.py" file in to create your function when the time comes.
+
+
+Two additional steps will be needed to get the function running correctly:
 1. Once an IAM Role is created for the skill, find the role in the IAM console and attach the "AmazonDynamoDBReadOnlyAccess" policy.
 2. On the function page for your Lambda function, add an environmental variable named "SerialNumber" and set the value to the serial number of your AWS IoT button.
 
