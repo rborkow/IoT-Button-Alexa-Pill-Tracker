@@ -48,6 +48,30 @@ def build_response(session_attributes, speechlet_response):
         'response': speechlet_response
     }
 
+# --------------- DynamoDB Helpers ----------------------
+
+def get_latest_event():
+    buttonSerialNumber = os.environ['SerialNumber']
+    dynamo = boto3.resource('dynamodb').Table('pillbutton_presses')
+    response = dynamo.query(
+        KeyConditionExpression=Key('SerialNumber').eq(buttonSerialNumber),
+        Limit=1,
+        ScanIndexForward=False
+    )
+    print(response)
+    
+    return response['Items']
+
+# --------------- Time and Date Helpers ----------------------
+
+def hours_before_reference(reference_time, event_time):
+    """ Returns how many hours before a reference time an event occurred.
+    Both inputs should be entered passed as integer values in seconds.
+    """
+    diff=reference_time-event_time
+    print(diff)
+
+    return int(round(diff/3600, 0))
 
 # --------------- Functions that control the skill's behavior ------------------
 
@@ -80,21 +104,14 @@ def handle_session_end_request():
         card_title, speech_output, None, should_end_session))
 
 def check_last_pilltime(intent, session):
-
-    buttonSerialNumber = os.environ['SerialNumber']
+    """ Respond to a request to see how many hours ago a user took their pills.
+    """
 
     card_title = intent['name']
     session_attributes = {}
     should_end_session = True
 
-    dynamo = boto3.resource('dynamodb').Table('pillbutton_presses')
-    response = dynamo.query(
-        KeyConditionExpression=Key('SerialNumber').eq(buttonSerialNumber),
-        Limit=1,
-        ScanIndexForward=False
-    )
-    print(response)
-    items = response['Items']
+    items = get_latest_event()
 
     if len(items) == 0:
         speech_output = "Hmm, I don't see any record of you taking vitamins. " \
@@ -102,15 +119,10 @@ def check_last_pilltime(intent, session):
         reprompt_text = "I'm not sure what you're asking for. "
     else:
         timestamp = items[0]['Timestamp']/1000
-        now = int(time())
-        print(timestamp)
-        print(int(time()))
-
-        diff=now-timestamp
-        print(diff)
-        hours_ago = int(round(diff/3600, 0))
+        hours_ago = hours_before_reference(int(time()), timestamp)
         if hours_ago <= 2:
-            speech_output = "It looks like you took your vitamins pretty recently."
+            speech_output = "It looks like you took your vitamins pretty " \
+                            "recently, within the last couple of hours."
             reprompt_text = "You can ask me when you last took vitamins by " \
                         "asking when did I last take vitamins?"
         else:
